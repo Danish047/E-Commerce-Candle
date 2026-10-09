@@ -4,8 +4,11 @@ import { api } from '../api'
 import { BRAND, WHATSAPP_NUMBER } from '../api/config'
 import { WhatsAppIcon } from './Icons'
 
+// "GenZ In It." already ends with a dot, so don't add a second one after it.
+const brandSentence = BRAND.name.replace(/\.$/, '')
+
 export function WhatsAppButton() {
-  const msg = encodeURIComponent(`Hi ${BRAND.name}! I have a question about your candles.`)
+  const msg = encodeURIComponent(`Hi ${brandSentence}! I have a question about your candles.`)
   return (
     <a
       href={`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`}
@@ -73,6 +76,7 @@ export default function Footer() {
         <div className={col}>
           <p className="mb-1 font-semibold text-cream">Shop</p>
           <Link to="/shop">All Candles</Link>
+          <Link to="/shop?category=trending">Trending on Insta</Link>
           <Link to="/shop?ordering=-reviews_count">Bestsellers</Link>
           <Link to="/shop?category=gift-sets">Gift Sets</Link>
           <Link to="/shop?occasion=corporate">Corporate Gifting</Link>
@@ -91,12 +95,12 @@ export default function Footer() {
           <Link to="/about">Our Story</Link>
           <Link to="/policies/privacy">Privacy Policy</Link>
           <Link to="/policies/terms">Terms of Service</Link>
-          <a href={BRAND.instagram} target="_blank" rel="noreferrer">Instagram</a>
+          {BRAND.instagram && <a href={BRAND.instagram} target="_blank" rel="noreferrer">Instagram</a>}
           <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
         </div>
       </div>
       <div className="border-t border-cocoa-soft/40 py-5 text-center text-xs text-sand">
-        © {new Date().getFullYear()} {BRAND.name}. Hand-poured with love in India.
+        © {new Date().getFullYear()} {brandSentence}. Hand-poured with love in India.
       </div>
     </footer>
   )
