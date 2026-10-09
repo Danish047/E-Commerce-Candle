@@ -1,7 +1,8 @@
 // ─── Central app config ────────────────────────────────────────────
 // Use the real backend by default; set VITE_USE_MOCK=true for the local demo.
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000/api'
+// For local development, set VITE_API_BASE=http://localhost:8000/api in .env.
+export const API_BASE = import.meta.env.VITE_API_BASE || 'https://e-commerce-candle-backend.onrender.com/api'
 export const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY || ''
 export const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP || '918528616464'
 
