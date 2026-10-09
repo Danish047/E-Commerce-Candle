@@ -9,7 +9,7 @@ import { FlameIcon, GiftIcon, HandIcon, LeafIcon, TruckIcon } from '../component
 const img = (id, w = 1200) => `https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`
 const HERO_MAIN = img('1612293905607-b003de9e54fb', 1400)
 const HERO_SIDE = img('1643122966676-29e8597257f7', 700)
-const HERO_SMALL = img('1773739685635-76be879b058f', 700)
+const HERO_SMALL = img('1613068431228-8cb6a1e92573', 700)
 const STORY_IMG = img('1643122941424-43e428ec899c', 1200)
 
 const familyColors = {
@@ -84,7 +84,7 @@ export default function Home() {
               <img src={HERO_SIDE} alt="Candles on a wooden table" className="h-full w-full object-cover" />
             </div>
             <div className="col-span-2 row-span-3 overflow-hidden rounded-3xl">
-              <img src={HERO_SMALL} alt="Colourful jar candles on a shelf" className="h-full w-full object-cover" />
+              <img src={HERO_SMALL} alt="Pillar candles with eucalyptus" className="h-full w-full object-cover" />
             </div>
           </div>
         </div>
