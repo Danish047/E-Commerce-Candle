@@ -10,7 +10,9 @@ export const BRAND = {
   name: 'GenZ In It.',
   tagline: 'Hand-poured soy candles that smell like home',
   email: 'genzinit@gmail.com',
-  instagram: 'https://genzinit.com/',
+  // Put your Instagram profile here (e.g. https://www.instagram.com/yourhandle/) or set VITE_INSTAGRAM.
+  // Left empty, the footer simply hides the Instagram link.
+  instagram: import.meta.env.VITE_INSTAGRAM || '',
 }
 
 // Must match the backend's rules (used for display; backend is the source of truth)
