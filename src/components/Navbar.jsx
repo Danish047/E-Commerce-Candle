@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { BRAND } from '../api/config'
 import { cartCount, useCart } from '../store/cart'
 import { useAuth } from '../store/auth'
+import AnnouncementBar from './AnnouncementBar'
 import { BagIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from './Icons'
 
 const links = [
@@ -10,6 +11,7 @@ const links = [
   { to: '/shop?category=gift-sets', label: 'Gift Sets' },
   { to: '/shop?occasion=diwali', label: 'Diwali' },
   { to: '/quiz', label: 'Scent Quiz' },
+  { to: '/bulk-order', label: 'Bulk Order' },
   { to: '/about', label: 'Our Story' },
 ]
 
@@ -35,9 +37,11 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40">
-      <div className="bg-cocoa py-2 text-center text-xs tracking-wide text-cream">
-        Free shipping above ₹999 · Use <b>WELCOME10</b> for 10% off your first order
-      </div>
+      <AnnouncementBar fallback={
+        <div className="bg-cocoa py-2 text-center text-xs tracking-wide text-cream">
+          Free shipping above ₹999 · Use <b>WELCOME10</b> for 10% off your first order
+        </div>
+      } />
       <nav className="border-b border-sand/70 bg-cream/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
           <button className="lg:hidden" onClick={() => setMenu(true)} aria-label="Open menu">

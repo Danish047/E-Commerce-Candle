@@ -152,6 +152,13 @@ const routes = [
   ['GET', /^\/moods\/$/, () => taxonomy.moods],
   ['GET', /^\/occasions\/$/, () => taxonomy.occasions],
 
+  ['GET', /^\/storefront\/$/, () => ({
+    announcements: [
+      { id: 1, text: 'Bulk & corporate orders: custom labels from 20 pieces', link: '/bulk-order', bg_color: '#3B2A20', text_color: '#FBF7F1' },
+      { id: 2, text: 'Free shipping above ₹999', link: '/shop', bg_color: '#3B2A20', text_color: '#FBF7F1' },
+    ],
+    banners: {},
+  })],
   ['GET', /^\/quiz\/$/, () => quizData],
   ['POST', /^\/quiz\/recommend\/$/, ({ body }) => {
     const { mood, category, occasion } = body.answers || {}

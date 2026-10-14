@@ -5,7 +5,7 @@ import { admin } from '../api'
 import { useDebounced, useQuery } from '../hooks'
 import { useAdminAuth } from '../store'
 import {
-  BoxIcon, CloseIcon, CogIcon, ExternalIcon, HomeIcon, InboxIcon, LayersIcon, LogoutIcon, MailIcon, MenuIcon,
+  BoxIcon, CloseIcon, ImageIcon, CogIcon, ExternalIcon, HomeIcon, InboxIcon, LayersIcon, LogoutIcon, MailIcon, MenuIcon,
   ReceiptIcon, SearchIcon, SparkIcon, StarIcon, TagIcon, UsersIcon,
 } from './Icons'
 import { Avatar, ConfirmHost, Jar, Menu, StatusBadge, Toaster, cx } from './kit'
@@ -34,6 +34,7 @@ const NAV = [
     title: 'Store',
     items: [
       { to: '/admin/collections', label: 'Collections', icon: LayersIcon },
+      { to: '/admin/banners', label: 'Banners', icon: ImageIcon },
       { to: '/admin/quiz', label: 'Scent quiz', icon: SparkIcon },
       { to: '/admin/settings', label: 'Settings', icon: CogIcon },
     ],

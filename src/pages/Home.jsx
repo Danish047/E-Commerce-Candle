@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useApi } from '../utils/helpers'
 import ProductCard from '../components/ProductCard'
+import BannerSlider from '../components/BannerSlider'
 import { ErrorBox, Spinner } from '../components/ui'
 import { FlameIcon, GiftIcon, HandIcon, LeafIcon, TruckIcon } from '../components/Icons'
 
@@ -47,48 +48,65 @@ function SectionHead({ eyebrow, title, sub, link, linkText }) {
   )
 }
 
+
+function DefaultHero() {
+  return (
+    <section className="relative overflow-hidden bg-wax">
+      <div className="container-x grid items-center gap-10 py-12 lg:grid-cols-2 lg:py-20">
+        <div>
+          <p className="mb-4 inline-flex rounded-full bg-ember-light px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-cocoa">
+            New drop · Trending on Insta
+          </p>
+          <h1 className="font-serif text-5xl font-semibold leading-[1.05] text-cocoa sm:text-6xl lg:text-7xl">
+            Light it up.<br />Make it <em className="text-ember">aesthetic.</em>
+          </h1>
+          <p className="mt-5 max-w-md text-lg text-cocoa-soft">
+            Hand-poured soy candles for your room, your reels and your 2am overthinking. From kesar kulfi to bubble
+            cubes, scents that feel like home, made for the GenZ way of living.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/shop?category=trending" className="btn-primary">Shop the viral drop</Link>
+            <Link to="/quiz" className="btn-outline">Find my vibe</Link>
+          </div>
+          <p className="mt-8 text-sm text-cocoa-soft">100% soy · Small batches · Shipped across India</p>
+        </div>
+        <div className="grid h-[420px] grid-cols-5 grid-rows-6 gap-3 sm:h-[520px]">
+          <div className="col-span-3 row-span-6 overflow-hidden rounded-3xl">
+            <img src={HERO_MAIN} alt="Hand lighting a soy candle in an amber jar" className="h-full w-full object-cover" />
+          </div>
+          <div className="col-span-2 row-span-3 overflow-hidden rounded-3xl">
+            <img src={HERO_SIDE} alt="Candles on a wooden table" className="h-full w-full object-cover" />
+          </div>
+          <div className="col-span-2 row-span-3 overflow-hidden rounded-3xl">
+            <img src={HERO_SMALL} alt="Pillar candles with eucalyptus" className="h-full w-full object-cover" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BulkStrip() {
+  return (
+    <section className="container-x mt-16">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ember-light p-8 sm:flex-row sm:items-center">
+        <div>
+          <h3 className="font-serif text-3xl font-semibold">Corporate & bulk gifting</h3>
+          <p className="mt-1 text-cocoa-soft">Custom labels with your logo and special pricing for 20+ boxes.</p>
+        </div>
+        <Link to="/bulk-order" className="btn-primary">Get a quote</Link>
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
   const categories = useApi(() => api.catalog.categories(), [])
   const moods = useApi(() => api.catalog.moods(), [])
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-wax">
-        <div className="container-x grid items-center gap-10 py-12 lg:grid-cols-2 lg:py-20">
-          <div>
-            <p className="mb-4 inline-flex rounded-full bg-ember-light px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-cocoa">
-              New drop · Trending on Insta
-            </p>
-            <h1 className="font-serif text-5xl font-semibold leading-[1.05] text-cocoa sm:text-6xl lg:text-7xl">
-              Light it up.<br />Make it <em className="text-ember">aesthetic.</em>
-            </h1>
-            <p className="mt-5 max-w-md text-lg text-cocoa-soft">
-              Hand-poured soy candles for your room, your reels and your 2am overthinking. From kesar kulfi to bubble
-              cubes, scents that feel like home, made for the GenZ way of living.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/shop?category=trending" className="btn-primary">Shop the viral drop</Link>
-              <Link to="/quiz" className="btn-outline">Find my vibe</Link>
-            </div>
-            <p className="mt-8 text-sm text-cocoa-soft">
-              100% soy · Small batches · Shipped across India
-            </p>
-          </div>
-
-          <div className="grid grid-cols-5 grid-rows-6 gap-3 h-[420px] sm:h-[520px]">
-            <div className="col-span-3 row-span-6 overflow-hidden rounded-3xl">
-              <img src={HERO_MAIN} alt="Hand lighting a soy candle in an amber jar" className="h-full w-full object-cover" />
-            </div>
-            <div className="col-span-2 row-span-3 overflow-hidden rounded-3xl">
-              <img src={HERO_SIDE} alt="Candles on a wooden table" className="h-full w-full object-cover" />
-            </div>
-            <div className="col-span-2 row-span-3 overflow-hidden rounded-3xl">
-              <img src={HERO_SMALL} alt="Pillar candles with eucalyptus" className="h-full w-full object-cover" />
-            </div>
-          </div>
-        </div>
-      </section>
+      <BannerSlider placement="home_hero" fallback={<DefaultHero />} />
 
       {/* Trust strip */}
       <section className="border-y border-sand bg-cream">
@@ -187,16 +205,7 @@ export default function Home() {
         <ProductRow params={{ occasion: 'diwali', ordering: '-id' }} />
       </section>
 
-      {/* Corporate banner */}
-      <section className="container-x mt-16">
-        <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ember-light p-8 sm:flex-row sm:items-center">
-          <div>
-            <h3 className="font-serif text-3xl font-semibold">Corporate & bulk gifting</h3>
-            <p className="mt-1 text-cocoa-soft">Custom labels with your logo and special pricing for 20+ boxes.</p>
-          </div>
-          <Link to="/contact?topic=corporate" className="btn-primary">Get a quote</Link>
-        </div>
-      </section>
+      <BannerSlider placement="home_middle" tall={false} fallback={<BulkStrip />} />
 
       {/* Story */}
       <section className="container-x mt-24 grid items-center gap-10 lg:grid-cols-2">

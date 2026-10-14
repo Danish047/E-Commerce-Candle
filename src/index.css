@@ -51,5 +51,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-flicker, .animate-rise, .animate-glow { animation: none !important; }
+  .animate-flicker, .animate-rise, .animate-glow, .animate-reveal { animation: none !important; }
+  .animate-marquee { animation-duration: 120s !important; }
 }
