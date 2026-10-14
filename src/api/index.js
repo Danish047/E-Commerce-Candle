@@ -6,6 +6,8 @@ import { http } from './client'
 // The full request/response contract is in API_CONTRACT.md.
 // ─────────────────────────────────────────────────────────────────
 export const api = {
+  storefront: () => http.get('/storefront/'),
+
   catalog: {
     // ?category=&mood=&occasion=&min_price=&max_price=&search=&ordering=&page=&page_size=
     products: (params) => http.get('/products/', params),

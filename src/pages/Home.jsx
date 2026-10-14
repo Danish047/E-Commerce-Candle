@@ -3,6 +3,7 @@ import { api } from '../api'
 import { useApi } from '../utils/helpers'
 import ProductCard from '../components/ProductCard'
 import CandleImage from '../components/CandleImage'
+import BannerSlider from '../components/BannerSlider'
 import { ErrorBox, Spinner, Stars } from '../components/ui'
 import { FlameIcon, GiftIcon, HandIcon, LeafIcon, TruckIcon } from '../components/Icons'
 
@@ -27,39 +28,58 @@ function ProductRow({ params }) {
   )
 }
 
+function DefaultHero() {
+  return (
+    <section className="relative overflow-hidden bg-wax">
+      <div className="container-x grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-24">
+        <div>
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-ember">Hand-poured · 100% Soy · Made in India</p>
+          <h1 className="font-serif text-5xl font-semibold leading-[1.05] text-cocoa sm:text-6xl lg:text-7xl">
+            Scents that feel<br />like <em className="text-ember">home.</em>
+          </h1>
+          <p className="mt-5 max-w-md text-lg text-cocoa-soft">
+            Monsoon chai, nani's kitchen, mogra nights. Candles inspired by the moments and memories you love most.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/shop" className="btn-primary">Shop candles</Link>
+            <Link to="/quiz" className="btn-outline">Find my scent</Link>
+          </div>
+          <div className="mt-8 flex items-center gap-3 text-sm text-cocoa-soft">
+            <Stars value={5} /> <span><b className="text-cocoa">4.8/5</b> from 500+ happy homes</span>
+          </div>
+        </div>
+        <div className="relative mx-auto aspect-square w-full max-w-md">
+          <div className="absolute inset-6 rounded-full bg-ember-light" />
+          <div className="relative h-full w-full">
+            <CandleImage product={{ name: 'Monsoon Chai', color: '#C99A6B' }} flame className="!bg-none" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BulkStrip() {
+  return (
+    <section className="container-x mt-16">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ember-light p-8 sm:flex-row sm:items-center">
+        <div>
+          <h3 className="font-serif text-3xl font-semibold">Corporate & bulk gifting</h3>
+          <p className="mt-1 text-cocoa-soft">Custom labels with your logo, special pricing for 20+ boxes.</p>
+        </div>
+        <Link to="/bulk-order" className="btn-primary">Get a quote</Link>
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
   const categories = useApi(() => api.catalog.categories(), [])
   const moods = useApi(() => api.catalog.moods(), [])
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-wax">
-        <div className="container-x grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-24">
-          <div>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-ember">Hand-poured · 100% Soy · Made in India</p>
-            <h1 className="font-serif text-5xl font-semibold leading-[1.05] text-cocoa sm:text-6xl lg:text-7xl">
-              Scents that feel<br />like <em className="text-ember">home.</em>
-            </h1>
-            <p className="mt-5 max-w-md text-lg text-cocoa-soft">
-              Monsoon chai, nani's kitchen, mogra nights. Candles inspired by the moments and memories you love most.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/shop" className="btn-primary">Shop candles</Link>
-              <Link to="/quiz" className="btn-outline">Find my scent</Link>
-            </div>
-            <div className="mt-8 flex items-center gap-3 text-sm text-cocoa-soft">
-              <Stars value={5} /> <span><b className="text-cocoa">4.8/5</b> from 500+ happy homes</span>
-            </div>
-          </div>
-          <div className="relative mx-auto aspect-square w-full max-w-md">
-            <div className="absolute inset-6 rounded-full bg-ember-light" />
-            <div className="relative h-full w-full">
-              <CandleImage product={{ name: 'Monsoon Chai', color: '#C99A6B' }} flame className="!bg-none" />
-            </div>
-          </div>
-        </div>
-      </section>
+      <BannerSlider placement="home_hero" fallback={<DefaultHero />} />
 
       {/* Trust strip */}
       <section className="border-y border-sand bg-cream">
@@ -138,16 +158,7 @@ export default function Home() {
         <ProductRow params={{ occasion: 'diwali', ordering: '-id' }} />
       </section>
 
-      {/* Corporate banner */}
-      <section className="container-x mt-16">
-        <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ember-light p-8 sm:flex-row sm:items-center">
-          <div>
-            <h3 className="font-serif text-3xl font-semibold">Corporate & bulk gifting</h3>
-            <p className="mt-1 text-cocoa-soft">Custom labels with your logo, special pricing for 20+ boxes.</p>
-          </div>
-          <Link to="/contact?topic=corporate" className="btn-primary">Get a quote</Link>
-        </div>
-      </section>
+      <BannerSlider placement="home_middle" tall={false} fallback={<BulkStrip />} />
 
       {/* Testimonials */}
       <section className="container-x mt-24">

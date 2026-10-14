@@ -158,6 +158,8 @@ export const admin = {
   messages: crud('messages'),
   subscribers: { ...crud('subscribers'), export: () => download('/subscribers/export/', {}, 'subscribers.csv') },
   quiz: crud('quiz'),
+  announcements: crud('announcements'),
+  banners: crud('banners'),
   staff: crud('staff'),
   settings: {
     get: () => http.get('/settings/'),

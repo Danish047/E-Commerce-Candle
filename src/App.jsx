@@ -13,6 +13,7 @@ import Account from './pages/Account'
 import OrderDetail from './pages/OrderDetail'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import BulkOrder from './pages/BulkOrder'
 import CandleCare from './pages/CandleCare'
 import Policy from './pages/Policy'
 import NotFound from './pages/NotFound'
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="account/orders/:orderNumber" element={<RequireAuth><OrderDetail /></RequireAuth>} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="bulk-order" element={<BulkOrder />} />
         <Route path="candle-care" element={<CandleCare />} />
         <Route path="policies/:type" element={<Policy />} />
         <Route path="*" element={<NotFound />} />

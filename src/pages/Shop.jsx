@@ -4,6 +4,7 @@ import { api } from '../api'
 import { useApi } from '../utils/helpers'
 import ProductCard from '../components/ProductCard'
 import { ErrorBox, PageHeader, Spinner } from '../components/ui'
+import BannerSlider from '../components/BannerSlider'
 import { CloseIcon } from '../components/Icons'
 
 const PRICE_RANGES = [
@@ -90,6 +91,7 @@ export default function Shop() {
 
   return (
     <>
+      <BannerSlider placement="shop_top" tall={false} className="mt-6" />
       <PageHeader eyebrow="Shop" title={title} subtitle="Hand-poured soy candles in scents inspired by Indian memories and moods." />
       <div className="container-x mt-10 grid gap-10 lg:grid-cols-[260px_1fr]">
         <aside className="hidden lg:block">{filters}</aside>

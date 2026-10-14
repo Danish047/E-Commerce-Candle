@@ -17,6 +17,7 @@ import Messages from './pages/Messages'
 import Subscribers from './pages/Subscribers'
 import Collections from './pages/Collections'
 import Quiz from './pages/Quiz'
+import Banners from './pages/Banners'
 import Settings from './pages/Settings'
 
 function RequireAdmin({ children }) {
@@ -58,6 +59,7 @@ export default function AdminApp() {
         <Route path="subscribers" element={<Subscribers />} />
         <Route path="collections" element={<Collections />} />
         <Route path="quiz" element={<Quiz />} />
+        <Route path="banners" element={<Banners />} />
         <Route path="settings" element={<Settings />} />
         <Route path="*" element={<AdminNotFound />} />
       </Route>
