@@ -69,7 +69,7 @@ export default function Footer() {
     <footer className="mt-24 bg-cocoa text-cream">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <p className="font-serif text-3xl font-bold">{BRAND.name}</p>
+          <img src="/logo.webp" alt={BRAND.name} className="w-40 rounded-2xl bg-cream p-3" />
           <p className="mt-2 max-w-xs text-sm text-sand">{BRAND.tagline}. Small-batch, 100% soy, made in India.</p>
           <div className="mt-8"><Newsletter /></div>
         </div>

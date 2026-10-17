@@ -47,7 +47,10 @@ export default function Navbar() {
           <button className="lg:hidden" onClick={() => setMenu(true)} aria-label="Open menu">
             <MenuIcon className="h-6 w-6" />
           </button>
-          <Link to="/" className="font-serif text-2xl font-bold tracking-tight text-cocoa">{BRAND.name}</Link>
+          <Link to="/" className="flex items-center gap-2 font-serif text-2xl font-bold tracking-tight text-cocoa">
+            <img src="/logo-mark.webp" alt="" className="h-10 w-auto" />
+            <span>{BRAND.name}</span>
+          </Link>
 
           <div className="ml-8 hidden gap-7 lg:flex">
             {links.map((l) => (
