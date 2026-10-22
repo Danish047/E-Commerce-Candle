@@ -168,15 +168,22 @@ export default function ProductDetail() {
           <p className="mt-1 text-xs text-cocoa-soft">Inclusive of all taxes · {p.size}</p>
 
           {/* Scent notes */}
-          <div className="mt-8 rounded-2xl bg-wax p-5">
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.15em] text-cocoa-soft">Scent notes</p>
-            {['top', 'middle', 'base'].map((k) => (
-              <div key={k} className="flex gap-4 border-b border-sand/70 py-2 last:border-0">
-                <span className="w-16 text-sm capitalize text-cocoa-soft">{k}</span>
-                <span className="text-sm font-medium">{p.notes[k].join(', ')}</span>
+          {(() => {
+            // Only show note levels that have notes; a single-level scent reads as "Fragrance".
+            const levels = ['top', 'middle', 'base'].filter((k) => p.notes?.[k]?.length)
+            if (!levels.length) return null
+            return (
+              <div className="mt-8 rounded-2xl bg-wax p-5">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.15em] text-cocoa-soft">Scent notes</p>
+                {levels.map((k) => (
+                  <div key={k} className="flex gap-4 border-b border-sand/70 py-2 last:border-0">
+                    <span className="w-20 text-sm capitalize text-cocoa-soft">{levels.length === 1 ? 'Fragrance' : k}</span>
+                    <span className="text-sm font-medium">{p.notes[k].join(', ')}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )
+          })()}
 
           <div className="mt-6 flex items-center gap-4">
             <QtyControl value={qty} max={Math.max(1, p.stock)} onChange={(q) => setQty(Math.max(1, q))} />
