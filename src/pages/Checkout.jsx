@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
-import { BRAND, FREE_SHIPPING_ABOVE, RAZORPAY_KEY, SHIPPING_FEE, USE_MOCK } from '../api/config'
+import { BRAND, FREE_SHIPPING_ABOVE, RAZORPAY_KEY, SHIPPING_FEE, USE_MOCK, COD_ENABLED } from '../api/config'
 import { cartSubtotal, useCart } from '../store/cart'
 import { useAuth } from '../store/auth'
 import { INDIAN_STATES, inr, loadScript } from '../utils/helpers'
@@ -207,7 +207,7 @@ export default function Checkout() {
               {[
                 ['razorpay', 'Pay online', 'UPI, cards, net banking, wallets (Razorpay)'],
                 ['cod', 'Cash on delivery', 'Pay when your candles arrive'],
-              ].map(([val, label, desc]) => (
+              ].filter(([val]) => val !== 'cod' || COD_ENABLED).map(([val, label, desc]) => (
                 <label key={val} className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 ${payment === val ? 'border-ember bg-ember-light/50' : 'border-sand'}`}>
                   <input type="radio" name="payment" value={val} checked={payment === val} onChange={() => setPayment(val)} className="mt-1 accent-ember" />
                   <div><p className="font-medium">{label}</p><p className="text-sm text-cocoa-soft">{desc}</p></div>
