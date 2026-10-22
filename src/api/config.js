@@ -12,7 +12,7 @@ export const BRAND = {
   email: 'genzinit@gmail.com',
   // Put your Instagram profile here (e.g. https://www.instagram.com/yourhandle/) or set VITE_INSTAGRAM.
   // Left empty, the footer simply hides the Instagram link.
-  instagram: import.meta.env.VITE_INSTAGRAM || '',
+  instagram: import.meta.env.VITE_INSTAGRAM || 'https://www.instagram.com/genzinit/',
 }
 
 // Must match the backend's rules (used for display; backend is the source of truth)
