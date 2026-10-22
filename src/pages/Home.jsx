@@ -124,6 +124,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Diwali specials — shown first */}
+      <section className="mt-12 bg-gradient-to-b from-[#fbeee0] to-transparent py-10 sm:mt-16">
+        <div className="container-x">
+          <SectionHead
+            eyebrow={<span className="inline-flex items-center gap-2"><GiftIcon className="h-4 w-4" /> 🪔 Diwali specials</span>}
+            title="Diwali diyas & festive candles"
+            sub="Hand-made diyas in sets of 4, new this season. Code DIWALI15 se 15% off."
+            link="/shop?occasion=diwali"
+            linkText="Shop all Diwali"
+          />
+          <ProductRow params={{ occasion: 'diwali', page_size: 8 }} />
+        </div>
+      </section>
+
       {/* Trending */}
       <section className="container-x mt-20">
         <SectionHead
@@ -191,18 +205,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Festive gifting */}
-      <section className="container-x mt-24">
-        <SectionHead
-          eyebrow={<span className="inline-flex items-center gap-2"><GiftIcon className="h-4 w-4" /> Festive edit</span>}
-          title="Diwali & shaadi gifting"
-          sub="Gold diyas, mehendi boxes and festive scents. Gift-wrapped and ready to go."
-          link="/shop?occasion=diwali"
-          linkText="Shop the festive edit"
-        />
-        <ProductRow params={{ occasion: 'diwali', ordering: '-id' }} />
       </section>
 
       <BannerSlider placement="home_middle" tall={false} fallback={<BulkStrip />} />
