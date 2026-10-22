@@ -4,7 +4,7 @@ import { api } from '../api'
 import { BRAND, WHATSAPP_NUMBER } from '../api/config'
 import { InstagramIcon, MailIcon, WhatsAppIcon } from './Icons'
 
-// "GenZ In It." already ends with a dot, so don't add a second one after it.
+// Strip a trailing dot from the brand name so sentences don't end with two dots.
 const brandSentence = BRAND.name.replace(/\.$/, '')
 
 export function WhatsAppButton() {
