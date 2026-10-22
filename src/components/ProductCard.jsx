@@ -14,6 +14,9 @@ export default function ProductCard({ product }) {
       <Link to={`/product/${product.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-2xl">
         <CandleImage product={product} className="transition duration-500 group-hover:scale-105" />
         <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          {product.occasions?.includes('diwali') && (
+            <span className="rounded-full bg-gradient-to-r from-[#7a1530] to-[#c2410c] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#ffe3a3] shadow-sm">🪔 Diwali Special</span>
+          )}
           {product.is_bestseller && <Badge tone="dark">Bestseller</Badge>}
           {product.is_new && <Badge tone="sage">New</Badge>}
           {off > 0 && <Badge>{off}% off</Badge>}
