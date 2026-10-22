@@ -4,6 +4,8 @@ export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 // For local development, set VITE_API_BASE=http://localhost:8000/api in .env.
 export const API_BASE = import.meta.env.VITE_API_BASE || 'https://e-commerce-candle-backend.onrender.com/api'
 export const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY || ''
+// Cash on delivery at checkout. Keep in sync with Admin → Settings → COD.
+export const COD_ENABLED = import.meta.env.VITE_COD === 'true'
 export const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP || '918528616464'
 
 export const BRAND = {
