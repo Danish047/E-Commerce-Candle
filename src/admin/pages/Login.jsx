@@ -83,7 +83,7 @@ export default function Login() {
             {error && <ErrorState error={error} />}
             <Field label="Email">
               <Input type="email" autoComplete="username" required autoFocus value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@lumiere.co.in" />
+                onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" />
             </Field>
             <Field label="Password">
               <div className="relative">
