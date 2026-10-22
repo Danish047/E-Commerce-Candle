@@ -7,7 +7,7 @@ export const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY || ''
 export const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP || '918528616464'
 
 export const BRAND = {
-  name: 'GenZ In It.',
+  name: 'GenzinIT',
   tagline: 'Hand-poured soy candles that smell like home',
   email: 'genzinit@gmail.com',
   // Put your Instagram profile here (e.g. https://www.instagram.com/yourhandle/) or set VITE_INSTAGRAM.
