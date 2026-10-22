@@ -39,7 +39,7 @@ function AdminNotFound() {
 export default function AdminApp() {
   useEffect(() => {
     const prev = document.title
-    document.title = 'Admin · Lumière & Co.'
+    document.title = 'Admin · GenzinIT'
     return () => { document.title = prev }
   }, [])
 
