@@ -9,11 +9,12 @@ export const api = {
   storefront: () => http.get('/storefront/'),
 
   catalog: {
-    // ?category=&mood=&occasion=&min_price=&max_price=&search=&ordering=&page=&page_size=
+    sections: () => http.get('/sections/'),
+    // ?section=&category=&mood=&occasion=&min_price=&max_price=&search=&ordering=&page=&page_size=
     products: (params) => http.get('/products/', params),
     product: (slug) => http.get(`/products/${slug}/`),
     related: (slug) => http.get(`/products/${slug}/related/`),
-    categories: () => http.get('/categories/'),
+    categories: (params) => http.get('/categories/', params),
     moods: () => http.get('/moods/'),
     occasions: () => http.get('/occasions/'),
   },
