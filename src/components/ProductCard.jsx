@@ -16,7 +16,7 @@ const subtitle = (p) => {
 export default function ProductCard({ product }) {
   const add = useCart((s) => s.add)
   const off = discountPct(product.price, product.compare_price)
-  const soldOut = product.stock <= 0
+  const soldOut = product.stock <= 0 && !product.quote_only
 
   return (
     <div className="group flex flex-col">
@@ -45,10 +45,16 @@ export default function ProductCard({ product }) {
         </Link>
         <p className="mt-0.5 line-clamp-1 text-sm text-cocoa-soft">{subtitle(product)}</p>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="font-semibold text-cocoa">{inr(product.price)}</span>
+          <span className="font-semibold text-cocoa">{product.quote_only ? 'Price on request' : inr(product.price)}</span>
           {off > 0 && <span className="text-sm text-cocoa-soft line-through">{inr(product.compare_price)}</span>}
           <span className="ml-auto text-xs text-cocoa-soft">{product.size}</span>
         </div>
+        {product.quote_only ? (
+          <Link to={`/product/${product.slug}`}
+            className="mt-3 rounded-full bg-cocoa py-2 text-center text-sm font-medium text-cream transition hover:bg-ember">
+            Get a quote
+          </Link>
+        ) : (
         <button
           onClick={() => add(product)}
           disabled={soldOut}
@@ -56,6 +62,7 @@ export default function ProductCard({ product }) {
         >
           {soldOut ? 'Sold out' : 'Add to cart'}
         </button>
+        )}
       </div>
     </div>
   )

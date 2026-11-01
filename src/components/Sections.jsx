@@ -198,3 +198,61 @@ export function SectionIntro({ section }) {
     </div>
   )
 }
+
+/** Product page box for made-to-order items (price on request): WhatsApp + quick quote form. */
+export function QuoteBox({ product }) {
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [state, setState] = useState({ sending: false, done: '', error: '' })
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const url = typeof window !== 'undefined' ? window.location.href : ''
+  const wa = whatsappLink(`Hi GenzinIT! I want this custom piece: ${product.name}\n${url}\n\nI'll share my photo here.`)
+
+  const submit = async (e) => {
+    e.preventDefault()
+    setState({ sending: true, done: '', error: '' })
+    try {
+      const r = await api.misc.contact({
+        ...form,
+        topic: `Quote: ${product.name}`.slice(0, 60),
+        message: `Product: ${product.name}\n${url}\n\n${form.message}`,
+      })
+      setState({ sending: false, done: r?.detail || 'Thanks! We will send you a quote soon.', error: '' })
+    } catch (err) {
+      setState({ sending: false, done: '', error: err?.message || 'Could not send. Please try WhatsApp.' })
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-sand bg-white/70 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-ember">Made to order</p>
+      <ol className="mt-3 space-y-1.5 text-sm text-cocoa-soft">
+        <li><b className="text-cocoa">1.</b> Send us your photo (front + side views give the best likeness).</li>
+        <li><b className="text-cocoa">2.</b> We share the price for your size, people and case, with a preview.</li>
+        <li><b className="text-cocoa">3.</b> Approve, pay, and we make and ship it to you.</li>
+      </ol>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <a href={wa} target="_blank" rel="noreferrer"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-sm font-semibold text-white hover:brightness-95">
+          Get a quote on WhatsApp
+        </a>
+        <button onClick={() => setOpen((o) => !o)} className="btn-outline">{open ? 'Close form' : 'Request a quote'}</button>
+      </div>
+      {open && (state.done ? (
+        <p className="mt-4 rounded-xl bg-wax p-4 text-center">{state.done}</p>
+      ) : (
+        <form onSubmit={submit} className="mt-4 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <input required className="input" placeholder="Your name" value={form.name} onChange={set('name')} />
+            <input className="input" placeholder="Phone / WhatsApp" value={form.phone} onChange={set('phone')} />
+          </div>
+          <input required type="email" className="input" placeholder="Email" value={form.email} onChange={set('email')} />
+          <textarea required rows={3} className="input" value={form.message} onChange={set('message')}
+            placeholder="Occasion, how many people, size you want, names for the plate, and a link to your photo if you have one." />
+          {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+          <button disabled={state.sending} className="btn-primary w-full">{state.sending ? 'Sending…' : 'Send request'}</button>
+        </form>
+      ))}
+    </div>
+  )
+}
