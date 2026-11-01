@@ -14,7 +14,7 @@ function StockCell({ n, low = 10 }) {
 }
 
 export default function Products() {
-  const [f, setF] = useFilters({ page: 1, search: '', category: '', status: '', stock: '', ordering: '-created_at' })
+  const [f, setF] = useFilters({ page: 1, search: '', section: '', category: '', status: '', stock: '', ordering: '-created_at' })
   const [search, setSearch] = useState(f.search)
   const ds = useDebounced(search)
   useEffect(() => { if (ds !== f.search) setF({ search: ds }) }, [ds]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -22,6 +22,8 @@ export default function Products() {
   const params = { ...f, page_size: 25 }
   const { data, loading, error, reload, setData } = useQuery(() => admin.products.list(params), [JSON.stringify(params)])
   const cats = useQuery(() => admin.categories.list(), [])
+  const sections = useQuery(() => admin.sections.list(), [])
+  const sectionCats = (cats.data || []).filter((c) => !f.section || !c.section || String(c.section) === String(f.section))
   const [picked, setPicked] = useState([])
   const [bulkBusy, setBulkBusy] = useState(false)
   const nav = useNavigate()
@@ -58,8 +60,15 @@ export default function Products() {
 
   return (
     <>
-      <PageHead title="Products" subtitle="Your candles, their prices and what's left on the shelf."
-        actions={<Button variant="accent" icon={PlusIcon} onClick={() => nav('/admin/products/new')}>Add product</Button>} />
+      <PageHead title="Products" subtitle="Everything you sell, its price and what's left on the shelf."
+        actions={<Button variant="accent" icon={PlusIcon} onClick={() => nav(`/admin/products/new${f.section ? `?section=${f.section}` : ''}`)}>Add product</Button>} />
+
+      {sections.data?.length > 1 && (
+        <div className="mb-3">
+          <Segmented value={String(f.section)} onChange={(section) => setF({ section, category: '' })}
+            options={[{ value: '', label: 'All sections' }, ...sections.data.map((x) => ({ value: String(x.id), label: `${x.icon} ${x.name}` }))]} />
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Segmented value={f.stock} onChange={(stock) => setF({ stock })}
@@ -83,7 +92,7 @@ export default function Products() {
               <SearchInput value={search} onChange={setSearch} placeholder="Search by name or SKU" className="min-w-[220px] flex-1" />
               <Select value={f.category} onChange={(e) => setF({ category: e.target.value })} className="w-auto" aria-label="Category">
                 <option value="">All categories</option>
-                {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {sectionCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Select>
               <Select value={f.ordering} onChange={(e) => setF({ ordering: e.target.value })} className="w-auto" aria-label="Sort">
                 <option value="-created_at">Newest first</option>
@@ -106,7 +115,7 @@ export default function Products() {
                 <tr>
                   <th className="a-th w-10"><Checkbox label="Select all" checked={allPicked} indeterminate={picked.length > 0 && !allPicked}
                     onChange={(v) => setPicked(v ? rows.map((r) => r.id) : [])} /></th>
-                  <th className="a-th">Product</th><th className="a-th">Category</th><th className="a-th text-right">Price</th>
+                  <th className="a-th">Product</th><th className="a-th">Section · Category</th><th className="a-th text-right">Price</th>
                   <th className="a-th text-right">In stock</th><th className="a-th text-right">Sold</th><th className="a-th">Rating</th><th className="a-th">Live</th>
                 </tr>
               </thead>
@@ -128,7 +137,10 @@ export default function Products() {
                         </span>
                       </Link>
                     </td>
-                    <td className="a-td">{p.category_name}</td>
+                    <td className="a-td">
+                      <span className="block text-sm">{p.category_name}</span>
+                      {p.section_name && <span className="block text-xs text-adm-muted">{p.section_name}</span>}
+                    </td>
                     <td className="a-td tabular text-right">
                       <span className="font-medium text-adm-ink">{inr(p.price)}</span>
                       {p.compare_price && <span className="block text-xs text-adm-muted line-through">{inr(p.compare_price)}</span>}
@@ -143,9 +155,9 @@ export default function Products() {
             </table>
           </div>
         ) : (
-          <Empty icon={BoxIcon} title={f.search || f.category || f.stock || f.status ? 'No products match' : 'Add your first candle'}
-            text={f.search || f.category || f.stock || f.status ? 'Try a different search or filter.' : 'Products you add here appear in the store as soon as they are live.'}
-            action={<Button variant="accent" icon={PlusIcon} onClick={() => nav('/admin/products/new')}>Add product</Button>} />
+          <Empty icon={BoxIcon} title={f.search || f.section || f.category || f.stock || f.status ? 'No products match' : 'Add your first product'}
+            text={f.search || f.section || f.category || f.stock || f.status ? 'Try a different search or filter.' : 'Products you add here appear in the store as soon as they are live.'}
+            action={<Button variant="accent" icon={PlusIcon} onClick={() => nav(`/admin/products/new${f.section ? `?section=${f.section}` : ''}`)}>Add product</Button>} />
         ))}
         {data && <Pagination page={f.page} count={data.count} pageSize={25} onPage={(page) => setF({ page })} />}
       </section>

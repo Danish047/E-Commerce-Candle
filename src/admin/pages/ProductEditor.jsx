@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import CandleImage from '../../components/CandleImage'
 import { admin } from '../api'
-import { ChevronLeft, ChevronRight, CopyIcon, ExternalIcon, ImageIcon, LinkIcon, TrashIcon, UploadIcon } from '../components/Icons'
+import { ChevronLeft, ChevronRight, CopyIcon, ExternalIcon, ImageIcon, LinkIcon, PlusIcon, TrashIcon, UploadIcon } from '../components/Icons'
 import {
   Button, ErrorState, Field, Input, Menu, PageHead, Panel, Select, Skeleton, TagInput, Textarea, Toggle, confirmAction, cx,
 } from '../components/kit'
@@ -11,7 +11,7 @@ import { toast } from '../store'
 import { DotsIcon } from '../components/Icons'
 
 const BLANK = {
-  name: '', tagline: '', description: '', price: '', compare_price: '', size: '200g', sku: '', category: '',
+  name: '', tagline: '', description: '', price: '', compare_price: '', size: '200g', sku: '', section: '', specs: [], category: '',
   moods: [], occasions: [], notes: { top: [], middle: [], base: [] }, burn_time_hours: 45, wax_type: '100% Soy',
   wick_type: 'Cotton', fragrance_load: '10%', stock: 0, color: '#C99A6B', is_active: true, is_bestseller: false, is_new: true, slug: '',
 }
@@ -31,6 +31,26 @@ function Chips({ options = [], value = [], onChange }) {
           </button>
         )
       })}
+    </div>
+  )
+}
+
+// Detail rows for non-candle sections (3D printing etc.): label + value, prefilled from the section's detail names.
+function Specs({ value = [], onChange, suggested = [] }) {
+  const rows = value.length ? value : suggested.map((label) => ({ label, value: '' }))
+  const update = (i, k, v) => onChange(rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)))
+  return (
+    <div className="space-y-2">
+      {rows.map((r, i) => (
+        <div key={i} className="grid grid-cols-[1fr_1.6fr_auto] gap-2">
+          <Input value={r.label} onChange={(e) => update(i, 'label', e.target.value)} placeholder="Material" aria-label="Detail name" />
+          <Input value={r.value} onChange={(e) => update(i, 'value', e.target.value)} placeholder="PLA, matte finish" aria-label={`${r.label || 'Detail'} value`} />
+          <button type="button" onClick={() => onChange(rows.filter((_, j) => j !== i))} aria-label="Remove detail"
+            className="grid h-10 w-10 place-items-center rounded-lg text-adm-muted hover:bg-bad-soft hover:text-bad"><TrashIcon className="h-4 w-4" /></button>
+        </div>
+      ))}
+      <Button variant="ghost" icon={PlusIcon} onClick={() => onChange([...rows, { label: '', value: '' }])}>Add detail</Button>
+      <p className="text-xs text-adm-muted">Empty rows are skipped when you save.</p>
     </div>
   )
 }
@@ -127,8 +147,9 @@ export default function ProductEditor() {
   const { id } = useParams()
   const isNew = id === 'new'
   const nav = useNavigate()
-  const tax = useQuery(() => Promise.all([admin.categories.list(), admin.moods.list(), admin.occasions.list()]), [])
-  const [cats, moods, occasions] = tax.data || []
+  const [sp] = useSearchParams()
+  const tax = useQuery(() => Promise.all([admin.categories.list(), admin.moods.list(), admin.occasions.list(), admin.sections.list()]), [])
+  const [cats, moods, occasions, sections = []] = tax.data || []
   const loaded = useQuery(() => (isNew ? Promise.resolve(null) : admin.products.get(id)), [id])
 
   const [form, setForm] = useState(BLANK)
@@ -151,9 +172,25 @@ export default function ProductEditor() {
     }
   }, [loaded.data, isNew])
 
+  // New product: start in the section picked on the Products page (or the first one) and its first category.
   useEffect(() => {
-    if (isNew && cats?.length && !form.category) setForm((f) => ({ ...f, category: cats[0].id }))
+    if (!isNew || !cats?.length || form.category) return
+    const sec = sections.find((x) => String(x.id) === sp.get('section')) || sections[0]
+    const cat = cats.find((c) => sec && c.section === sec.id) || cats[0]
+    setForm((f) => ({ ...f, section: sec?.id ?? '', category: cat.id, size: sec && sec.product_type !== 'candle' ? '' : f.size }))
   }, [cats, isNew]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const section = sections.find((x) => x.id === Number(form.section))
+  const isCandle = !section || section.product_type === 'candle'
+  const sectionCats = (cats || []).filter((c) => !section || !c.section || c.section === section.id)
+  const pickSection = (e) => {
+    const sec = sections.find((x) => x.id === Number(e.target.value))
+    setForm((f) => {
+      const keep = (cats || []).find((c) => c.id === Number(f.category) && (!c.section || c.section === sec?.id))
+      const cat = keep || (cats || []).find((c) => c.section === sec?.id) || (cats || []).find((c) => !c.section)
+      return { ...f, section: sec?.id ?? '', category: cat?.id ?? f.category }
+    })
+  }
 
   const dirty = useMemo(() => JSON.stringify(form) !== JSON.stringify(original) || queued.length > 0, [form, original, queued])
   useEffect(() => {
@@ -175,8 +212,10 @@ export default function ProductEditor() {
       stock: Number(form.stock) || 0,
       burn_time_hours: Number(form.burn_time_hours) || 0,
       category: Number(form.category),
+      section: form.section === '' ? null : Number(form.section),
+      specs: (form.specs || []).filter((r) => r.label?.trim() && r.value?.trim()),
     }
-    ;['images', 'rating', 'reviews_count', 'units_sold', 'created_at', 'updated_at', 'category_name', 'id'].forEach((k) => delete payload[k])
+    ;['images', 'rating', 'reviews_count', 'units_sold', 'created_at', 'updated_at', 'category_name', 'section_name', 'section_type', 'id'].forEach((k) => delete payload[k])
     if (isNew && !payload.slug) delete payload.slug
     try {
       let saved = isNew ? await admin.products.create(payload) : await admin.products.update(id, payload)
@@ -221,7 +260,7 @@ export default function ProductEditor() {
   if ((!isNew && !loaded.data) || !tax.data) return <div className="space-y-4"><Skeleton className="h-12 w-72" /><Skeleton className="h-[520px] rounded-2xl" /></div>
 
   const off = form.compare_price && Number(form.compare_price) > Number(form.price) ? Math.round((1 - form.price / form.compare_price) * 100) : 0
-  const preview = { ...form, images: images.map((i) => i.src) }
+  const preview = { ...form, section_type: isCandle ? 'candle' : 'general', images: images.map((i) => i.src) }
 
   return (
     <div className="pb-24">
@@ -248,6 +287,17 @@ export default function ProductEditor() {
             <Photos product={isNew ? null : { id, images }} queued={queued} setQueued={setQueued} onChange={setImages} />
           </Panel>
 
+          {!isCandle && (
+            <Panel title={`${section.name} details`}>
+              <div className="mb-4 max-w-xs">
+                <Field label="Size" hint="Shown on the product card, e.g. 10 cm or Set of 2." error={errors.size}><Input value={form.size} onChange={set('size')} /></Field>
+              </div>
+              {errors.specs && <p className="mb-2 text-xs text-bad">{String(errors.specs)}</p>}
+              <Specs value={form.specs} onChange={set('specs')} suggested={section.spec_fields || []} />
+            </Panel>
+          )}
+
+          {isCandle && <>
           <Panel title="Fragrance">
             <div className="grid gap-4 sm:grid-cols-3">
               {['top', 'middle', 'base'].map((layer) => (
@@ -264,7 +314,7 @@ export default function ProductEditor() {
 
           <Panel title="Candle details">
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Size"><Input value={form.size} onChange={set('size')} /></Field>
+              <Field label="Size" error={errors.size}><Input value={form.size} onChange={set('size')} /></Field>
               <Field label="Burn time (hours)" error={errors.burn_time_hours}><Input type="number" min="0" value={form.burn_time_hours} onChange={set('burn_time_hours')} /></Field>
               <Field label="Fragrance load"><Input value={form.fragrance_load} onChange={set('fragrance_load')} /></Field>
               <Field label="Wax"><Input list="wax" value={form.wax_type} onChange={set('wax_type')} /></Field>
@@ -273,6 +323,7 @@ export default function ProductEditor() {
             <datalist id="wax">{['100% Soy', 'Soy-Coconut blend', 'Beeswax', 'Coconut-Apricot'].map((x) => <option key={x} value={x} />)}</datalist>
             <datalist id="wick">{['Cotton', 'Wooden', 'Crackling wood'].map((x) => <option key={x} value={x} />)}</datalist>
           </Panel>
+          </>}
         </div>
 
         <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
@@ -307,10 +358,18 @@ export default function ProductEditor() {
 
           <Panel title="Organise">
             <div className="space-y-4">
-              <Field label="Category" required error={errors.category}>
-                <Select value={form.category} onChange={set('category')}>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select>
+              {sections.length > 0 && (
+                <Field label="Section" hint="Which tab it shows under on the home page." error={errors.section}>
+                  <Select value={form.section ?? ''} onChange={pickSection}>
+                    {sections.map((x) => <option key={x.id} value={x.id}>{x.icon} {x.name}{x.status !== 'live' ? ` (${x.status === 'hidden' ? 'hidden' : 'coming soon'})` : ''}</option>)}
+                  </Select>
+                </Field>
+              )}
+              <Field label="Category" required error={errors.category}
+                hint={!sectionCats.length ? 'Add a category for this section in Collections first.' : ''}>
+                <Select value={form.category} onChange={set('category')}>{(sectionCats.length ? sectionCats : cats).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select>
               </Field>
-              <Field label="Jar colour" hint="Used when there's no photo, and for thumbnails here." error={errors.color}>
+              <Field label={isCandle ? 'Jar colour' : 'Colour'} hint="Used when there's no photo, and for thumbnails here." error={errors.color}>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {SWATCHES.map((c) => (
                     <button key={c} type="button" onClick={() => set('color')(c)} aria-label={c}

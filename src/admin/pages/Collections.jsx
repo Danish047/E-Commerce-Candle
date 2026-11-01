@@ -3,21 +3,21 @@ import { Link } from 'react-router-dom'
 import { admin } from '../api'
 import { ArrowDown, ArrowUp, EditIcon, LayersIcon, PlusIcon, TrashIcon } from '../components/Icons'
 import {
-  Button, Empty, ErrorState, Field, IconButton, Input, Modal, PageHead, Segmented, TableSkeleton, Textarea, confirmAction,
+  Button, Empty, ErrorState, Field, IconButton, Input, Modal, PageHead, Segmented, Select, TableSkeleton, Textarea, confirmAction,
 } from '../components/kit'
 import { useFilters, useQuery } from '../hooks'
 import { toast } from '../store'
 
 const KINDS = {
-  categories: { label: 'Scent families', one: 'scent family', filter: 'category', hint: 'The main groups on the Shop page, like Floral or Woody.' },
+  categories: { label: 'Categories', one: 'category', filter: 'category', hint: 'The main groups in each section, like Floral or Woody for candles, or Name plates for 3D.' },
   moods: { label: 'Moods', one: 'mood', filter: 'mood', hint: 'How a candle makes you feel. Used by filters and the scent quiz.' },
   occasions: { label: 'Occasions', one: 'occasion', filter: 'occasion', hint: 'Who or what it’s for: birthdays, Diwali, self-care…' },
 }
 const slugify = (s) => s.toLowerCase().trim().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
-function EditModal({ kind, item, onClose, onSaved }) {
+function EditModal({ kind, item, sections = [], onClose, onSaved }) {
   const k = KINDS[kind]
-  const [form, setForm] = useState(item || { name: '', slug: '', description: '' })
+  const [form, setForm] = useState(item || { name: '', slug: '', description: '', section: sections[0]?.id ?? null })
   const [slugTouched, setSlugTouched] = useState(!!item)
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
@@ -26,7 +26,10 @@ function EditModal({ kind, item, onClose, onSaved }) {
     setBusy(true)
     setErrors({})
     const body = { name: form.name.trim(), slug: form.slug || slugify(form.name) }
-    if (kind === 'categories') body.description = form.description || ''
+    if (kind === 'categories') {
+      body.description = form.description || ''
+      body.section = form.section ? Number(form.section) : null
+    }
     try {
       item ? await admin[kind].update(item.id, body) : await admin[kind].create(body)
       toast.ok(item ? `${body.name} updated` : `${body.name} added`)
@@ -47,6 +50,14 @@ function EditModal({ kind, item, onClose, onSaved }) {
         <Field label="Short name for links" hint={item ? 'Changing it can break links that were already shared.' : 'Filled in for you.'} error={errors.slug}>
           <Input value={form.slug} onChange={(e) => { setSlugTouched(true); setForm((f) => ({ ...f, slug: slugify(e.target.value) })) }} />
         </Field>
+        {kind === 'categories' && sections.length > 0 && (
+          <Field label="Section" hint="Shown as a filter only inside this section." error={errors.section}>
+            <Select value={form.section ?? ''} onChange={(e) => setForm((f) => ({ ...f, section: e.target.value || null }))}>
+              {sections.map((x) => <option key={x.id} value={x.id}>{x.icon} {x.name}</option>)}
+              <option value="">Every section</option>
+            </Select>
+          </Field>
+        )}
         {kind === 'categories' && (
           <Field label="Description" hint="Optional, one line." error={errors.description}>
             <Textarea rows={2} value={form.description || ''} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
@@ -63,6 +74,7 @@ export default function Collections() {
   const k = KINDS[kind]
   const { data, loading, error, reload, setData } = useQuery(() => admin[kind].list(), [kind])
   const [editing, setEditing] = useState(null)
+  const sections = useQuery(() => admin.sections.list(), [])
   const rows = data || []
 
   const move = async (i, dir) => {
@@ -87,7 +99,7 @@ export default function Collections() {
 
   return (
     <>
-      <PageHead title="Collections" subtitle="How candles are grouped on the store: filters, menus and quiz answers."
+      <PageHead title="Collections" subtitle="How products are grouped on the store: filters, menus and quiz answers."
         actions={<Button variant="accent" icon={PlusIcon} onClick={() => setEditing('new')}>New {k.one}</Button>} />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Segmented value={kind} onChange={(tab) => setF({ tab })} options={Object.entries(KINDS).map(([value, x]) => ({ value, label: x.label }))} />
@@ -108,7 +120,7 @@ export default function Collections() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{r.name}</p>
-                  <p className="truncate text-xs text-adm-muted">/{r.slug}{r.description ? ` · ${r.description}` : ''}</p>
+                  <p className="truncate text-xs text-adm-muted">/{r.slug}{kind === 'categories' ? ` · ${r.section_name || 'Every section'}` : ''}{r.description ? ` · ${r.description}` : ''}</p>
                 </div>
                 {kind === 'categories' ? (
                   <Link to={`/admin/products?category=${r.id}`}
@@ -128,7 +140,7 @@ export default function Collections() {
         )}
       </section>
 
-      {editing && <EditModal kind={kind} item={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload() }} />}
+      {editing && <EditModal kind={kind} sections={sections.data || []} item={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload() }} />}
     </>
   )
 }
