@@ -1,10 +1,15 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { useApi } from '../utils/helpers'
 import ProductCard from '../components/ProductCard'
 import BannerSlider from '../components/BannerSlider'
 import { ErrorBox, Spinner } from '../components/ui'
-import { FlameIcon, GiftIcon, HandIcon, LeafIcon, TruckIcon } from '../components/Icons'
+import { CheckIcon, GiftIcon, HandIcon, TruckIcon, WhatsAppIcon } from '../components/Icons'
+import {
+  ComingSoonBadge, CustomOrderCTA, ProductRail, SectionGrid, SectionIntro, SectionTabs, WhatWeDo, whatsappLink,
+} from '../components/Sections'
+import { sectionBySlug, useStorefront } from '../store/storefront'
 
 // Placeholder photos (Unsplash, free licence). Swap these for your own shoots.
 const img = (id, w = 1200) => `https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`
@@ -100,30 +105,13 @@ function BulkStrip() {
   )
 }
 
-export default function Home() {
-  const categories = useApi(() => api.catalog.categories(), [])
+// Everything that is specific to the Candles tab (also the fallback when the backend has no sections yet).
+function CandleHome() {
+  const categories = useApi(() => api.catalog.categories({ section: 'candles' }), [])
   const moods = useApi(() => api.catalog.moods(), [])
 
   return (
     <>
-      <BannerSlider placement="home_hero" fallback={<DefaultHero />} />
-
-      {/* Trust strip */}
-      <section className="border-y border-sand bg-cream">
-        <div className="container-x grid grid-cols-2 gap-6 py-6 text-sm lg:grid-cols-4">
-          {[
-            [LeafIcon, '100% natural soy wax'],
-            [HandIcon, 'Hand-poured in small batches'],
-            [FlameIcon, 'Clean burn, no soot'],
-            [TruckIcon, 'Free shipping above ₹999'],
-          ].map(([Icon, text]) => (
-            <div key={text} className="flex items-center gap-3 text-cocoa">
-              <Icon className="h-6 w-6 shrink-0 text-ember" /> {text}
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Diwali specials — shown first */}
       <section className="mt-12 bg-gradient-to-b from-[#fbeee0] to-transparent py-10 sm:mt-16">
         <div className="container-x">
@@ -209,7 +197,137 @@ export default function Home() {
 
       <BannerSlider placement="home_middle" tall={false} fallback={<BulkStrip />} />
 
-      {/* Story */}
+    </>
+  )
+}
+
+const TRUST = [
+  [HandIcon, 'Handmade in small batches'],
+  [CheckIcon, 'Quality checked before dispatch'],
+  [GiftIcon, 'Gift-ready packing'],
+  [TruckIcon, 'Free shipping above ₹999'],
+]
+
+// "All" tab: one side-scrolling row per live section, then teasers for what's coming next.
+function AllSections({ sections, onPick }) {
+  const live = sections.filter((s) => s.status === 'live' && s.product_count > 0)
+  const soon = sections.filter((s) => s.status === 'coming_soon')
+  return (
+    <div className="container-x space-y-16 pt-10">
+      {live.map((s) => (
+        <section key={s.slug}>
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="section-title flex items-center gap-3"><span aria-hidden>{s.icon}</span> {s.name}</h2>
+              {s.tagline && <p className="mt-1 text-cocoa-soft">{s.tagline}</p>}
+            </div>
+            <button onClick={() => onPick(s.slug)} className="shrink-0 text-sm font-medium underline">See all →</button>
+          </div>
+          <ProductRail params={{ section: s.slug }} />
+        </section>
+      ))}
+
+      {soon.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2">
+          {soon.map((s) => (
+            <div key={s.slug} className="flex items-center gap-5 rounded-3xl border border-dashed border-cocoa/30 p-6" style={{ background: s.accent_color }}>
+              <span className="text-5xl leading-none" aria-hidden>{s.icon}</span>
+              <div className="flex-1">
+                <ComingSoonBadge />
+                <p className="mt-2 font-serif text-2xl font-semibold">{s.name}</p>
+                {s.tagline && <p className="text-sm text-cocoa-soft">{s.tagline}</p>}
+                <button onClick={() => onPick(s.slug)} className="mt-3 text-sm font-semibold underline">Know more →</button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {!live.length && !soon.length && <p className="py-10 text-center text-cocoa-soft">New products coming soon.</p>}
+    </div>
+  )
+}
+
+// Tab for any non-candle section (3D Printing and whatever comes next).
+function GeneralSection({ section }) {
+  const soon = section.status === 'coming_soon'
+  return (
+    <div className="container-x pt-10">
+      <SectionIntro section={section} />
+      {soon ? (
+        <div className="mb-12 rounded-3xl bg-wax p-8 text-center">
+          <p className="font-serif text-2xl font-semibold">We are setting this up</p>
+          <p className="mx-auto mt-2 max-w-lg text-cocoa-soft">
+            Products will appear here soon.{section.allow_custom_orders ? ' You can already send us your idea for a custom order.' : ''}
+          </p>
+          <a href={whatsappLink(`Hi GenzinIT! Please tell me when ${section.name} is live.`)} target="_blank" rel="noreferrer"
+            className="btn-outline mt-5 inline-flex items-center gap-2">
+            <WhatsAppIcon className="h-4 w-4" /> Notify me on WhatsApp
+          </a>
+        </div>
+      ) : (
+        <div className="mb-16"><SectionGrid section={section} pageSize={12} /></div>
+      )}
+      {section.allow_custom_orders && <CustomOrderCTA section={section} />}
+    </div>
+  )
+}
+
+export default function Home() {
+  const { sections, loaded, load } = useStorefront()
+  const [params, setParams] = useSearchParams()
+  useEffect(() => { load() }, [load])
+
+  const slug = params.get('section') || ''
+  const active = sectionBySlug(sections, slug)
+  const activeSlug = active ? slug : ''
+
+  // ?section=3d-printing keeps the tab in the URL, so a link can be shared on Instagram / WhatsApp.
+  const pick = (next, scroll = true) => {
+    setParams(next ? { section: next } : {}, { replace: true, preventScrollReset: true })
+    if (scroll) document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // Backend without sections (or still loading): keep the classic candle home page.
+  const hasSections = sections.length > 0
+
+  let content
+  if (!loaded) content = <Spinner />
+  else if (!hasSections || active?.product_type === 'candle') content = <CandleHome />
+  else if (active) content = <GeneralSection section={active} />
+  else content = <AllSections sections={sections} onPick={pick} />
+
+  return (
+    <>
+      <BannerSlider placement="home_hero" fallback={<DefaultHero />} />
+
+      {/* Trust strip */}
+      <section className="border-y border-sand bg-cream">
+        <div className="container-x grid grid-cols-2 gap-6 py-6 text-sm lg:grid-cols-4">
+          {TRUST.map(([Icon, text]) => (
+            <div key={text} className="flex items-center gap-3 text-cocoa">
+              <Icon className="h-6 w-6 shrink-0 text-ember" /> {text}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {hasSections && <WhatWeDo sections={sections} onPick={pick} />}
+
+      {hasSections && (
+        <div id="explore" className="mt-16 scroll-mt-24">
+          <div className="container-x mb-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ember">Shop</p>
+            <h2 className="section-title mt-2">Explore our products</h2>
+          </div>
+          <SectionTabs sections={sections} active={activeSlug} onPick={(s) => pick(s)} />
+        </div>
+      )}
+
+      {content}
+
+      {/* Story (candle brand story: not on other sections' tabs) */}
+      {(!active || active.product_type === 'candle') && <>
       <section className="container-x mt-24 grid items-center gap-10 lg:grid-cols-2">
         <div className="aspect-[4/3] overflow-hidden rounded-3xl">
           <img src={STORY_IMG} alt="Jar candles on a table" className="h-full w-full object-cover" />
@@ -225,6 +343,7 @@ export default function Home() {
           <Link to="/about" className="btn-outline mt-6">Read our story</Link>
         </div>
       </section>
+      </>}
     </>
   )
 }
