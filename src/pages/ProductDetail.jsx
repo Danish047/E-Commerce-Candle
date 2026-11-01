@@ -11,6 +11,7 @@ import { QtyControl } from '../components/CartDrawer'
 import { Badge, ErrorBox, Spinner, Stars } from '../components/ui'
 import { ClockIcon, FlameIcon, LeafIcon, TruckIcon } from '../components/Icons'
 import NotFound from './NotFound'
+import { QuoteBox } from '../components/Sections'
 
 function PincodeCheck() {
   const [pin, setPin] = useState('')
@@ -169,10 +170,12 @@ export default function ProductDetail() {
           <p className="mt-2 text-lg italic text-cocoa-soft">{p.tagline}</p>
 
           <div className="mt-5 flex items-baseline gap-3">
-            <span className="text-3xl font-semibold">{inr(p.price)}</span>
+            <span className="text-3xl font-semibold">{p.quote_only ? 'Price on request' : inr(p.price)}</span>
             {off > 0 && <><span className="text-lg text-cocoa-soft line-through">{inr(p.compare_price)}</span><Badge>Save {off}%</Badge></>}
           </div>
-          <p className="mt-1 text-xs text-cocoa-soft">Inclusive of all taxes{p.size ? ` · ${p.size}` : ''}</p>
+          <p className="mt-1 text-xs text-cocoa-soft">
+            {p.quote_only ? 'Depends on size, number of people and display case' : 'Inclusive of all taxes'}{p.size ? ` · ${p.size}` : ''}
+          </p>
 
           {/* Scent notes */}
           {(() => {
@@ -192,6 +195,7 @@ export default function ProductDetail() {
             )
           })()}
 
+          {p.quote_only ? <QuoteBox product={p} /> : <>
           <div className="mt-6 flex items-center gap-4">
             <QtyControl value={qty} max={Math.max(1, p.stock)} onChange={(q) => setQty(Math.max(1, q))} />
             <span className={`text-sm ${p.stock < 10 ? 'text-ember' : 'text-cocoa-soft'}`}>
@@ -205,6 +209,7 @@ export default function ProductDetail() {
           </div>
 
           <div className="mt-6"><PincodeCheck /></div>
+          </>}
 
           {isCandle ? (
             <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
