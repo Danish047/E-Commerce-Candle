@@ -137,6 +137,7 @@ export const admin = {
     reorderImages: (id, ids) => http.post(`/products/${id}/images/reorder/`, { ids }),
     bulk: (ids, action, extra = {}) => http.post('/products/bulk/', { ids, action, ...extra }),
   },
+  sections: crud('sections'),
   categories: crud('categories'),
   moods: crud('moods'),
   occasions: crud('occasions'),

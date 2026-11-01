@@ -4,9 +4,10 @@ import { BRAND } from '../api/config'
 import { cartCount, useCart } from '../store/cart'
 import { useAuth } from '../store/auth'
 import AnnouncementBar from './AnnouncementBar'
+import { useStorefront } from '../store/storefront'
 import { BagIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from './Icons'
 
-const links = [
+const baseLinks = [
   { to: '/shop', label: 'Shop All' },
   { to: '/shop?category=gift-sets', label: 'Gift Sets' },
   { to: '/shop?occasion=diwali', label: 'Diwali' },
@@ -16,6 +17,10 @@ const links = [
 ]
 
 export default function Navbar() {
+  // Non-candle sections (3D Printing, ...) get their own link right after "Shop All".
+  const sections = useStorefront((s) => s.sections)
+  const extra = sections.filter((x) => x.product_type !== 'candle').map((x) => ({ to: `/?section=${x.slug}`, label: x.name }))
+  const links = [baseLinks[0], ...extra, ...baseLinks.slice(1)]
   const count = useCart((s) => cartCount(s.items))
   const openCart = useCart((s) => s.open)
   const user = useAuth((s) => s.user)

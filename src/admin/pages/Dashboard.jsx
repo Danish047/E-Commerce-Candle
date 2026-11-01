@@ -127,6 +127,27 @@ export default function Dashboard() {
             </Panel>
           </div>
 
+          {d.by_section?.length > 1 && (
+            <Panel title="Sales by section" action={<Link to="/admin/sections" className="text-xs font-medium text-ember-dark hover:underline">Manage sections</Link>}>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {d.by_section.map((x) => {
+                  const total = d.by_section.reduce((n, y) => n + y.revenue, 0) || 1
+                  return (
+                    <Link key={x.id} to={`/admin/products?section=${x.id}`} className="rounded-xl border border-adm-line p-4 hover:bg-adm-soft">
+                      <p className="flex items-center gap-2 text-sm font-medium"><span className="text-lg">{x.icon}</span>{x.name}
+                        {x.status === 'coming_soon' && <span className="text-[11px] font-normal text-warn">Coming soon</span>}</p>
+                      <p className="tabular mt-2 text-xl font-semibold">{inr(x.revenue)}</p>
+                      <p className="tabular text-xs text-adm-muted">{x.quantity} item{x.quantity === 1 ? '' : 's'} sold</p>
+                      <span className="mt-3 block h-1.5 rounded-full bg-adm-soft">
+                        <span className="block h-full rounded-full bg-ember" style={{ width: `${(x.revenue / total) * 100}%` }} />
+                      </span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </Panel>
+          )}
+
           <div className="grid gap-5 lg:grid-cols-2">
             <Panel title="Best sellers" bodyClass="p-2">
               {d.top_products.length ? (

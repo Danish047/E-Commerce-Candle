@@ -18,6 +18,7 @@ const NAV = [
     items: [
       { to: '/admin/orders', label: 'Orders', icon: ReceiptIcon, badge: 'orders' },
       { to: '/admin/products', label: 'Products', icon: BoxIcon },
+      { to: '/admin/sections', label: 'Sections', icon: SparkIcon },
       { to: '/admin/customers', label: 'Customers', icon: UsersIcon },
       { to: '/admin/coupons', label: 'Coupons', icon: TagIcon },
     ],

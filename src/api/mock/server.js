@@ -82,7 +82,8 @@ const applyCoupon = (code, subtotal) => {
 const routes = [
   ['GET', /^\/products\/$/, ({ params }) => {
     let items = allProducts()
-    const { category, mood, occasion, search, min_price, max_price, is_bestseller, is_new, ordering } = params
+    const { section, category, mood, occasion, search, min_price, max_price, is_bestseller, is_new, ordering } = params
+    if (section) items = items.filter((p) => (p.section || 'candles') === section)
     if (category) items = items.filter((p) => p.category === category)
     if (mood) items = items.filter((p) => p.moods.includes(mood))
     if (occasion) items = items.filter((p) => p.occasions.includes(occasion))
@@ -158,6 +159,10 @@ const routes = [
       { id: 2, text: 'Free shipping above ₹999', link: '/shop', bg_color: '#3B2A20', text_color: '#FBF7F1' },
     ],
     banners: {},
+    sections: [
+      { id: 1, slug: 'candles', name: 'Candles', icon: '🕯️', tagline: 'Hand-poured soy candles that smell like home', description: 'Small-batch soy wax candles in jars, tins and sculpted shapes.', image: '', accent_color: '#F3E2CF', product_type: 'candle', allow_custom_orders: false, status: 'live', product_count: allProducts().length },
+      { id: 2, slug: '3d-printing', name: '3D Printing', icon: '🖨️', tagline: 'Custom 3D printed models, gifts and decor', description: 'Name plates, figurines, keychains and decor, printed to order.', image: '', accent_color: '#DCE6F2', product_type: 'general', allow_custom_orders: true, status: 'coming_soon', product_count: 0 },
+    ],
   })],
   ['GET', /^\/quiz\/$/, () => quizData],
   ['POST', /^\/quiz\/recommend\/$/, ({ body }) => {

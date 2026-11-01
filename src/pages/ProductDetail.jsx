@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { discountPct, inr, useApi } from '../utils/helpers'
 import { useCart } from '../store/cart'
 import { useAuth } from '../store/auth'
+import { useStorefront } from '../store/storefront'
 import CandleImage from '../components/CandleImage'
 import ProductCard from '../components/ProductCard'
 import { QtyControl } from '../components/CartDrawer'
@@ -131,6 +132,8 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1)
   const { data: p, loading, error, reload } = useApi(() => api.catalog.product(slug), [slug])
   const related = useApi(() => api.catalog.related(slug), [slug])
+  const { sections, load } = useStorefront()
+  useEffect(() => { load() }, [load])
 
   if (loading) return <Spinner />
   if (error?.status === 404) return <NotFound />
@@ -138,11 +141,15 @@ export default function ProductDetail() {
 
   const off = discountPct(p.price, p.compare_price)
   const soldOut = p.stock <= 0
+  const isCandle = !p.section_type || p.section_type === 'candle'
+  const section = sections.find((x) => x.slug === p.section)
 
   return (
     <div className="container-x pt-8">
       <nav className="mb-6 text-sm text-cocoa-soft">
-        <Link to="/" className="hover:underline">Home</Link> / <Link to="/shop" className="hover:underline">Shop</Link> / <span className="text-cocoa">{p.name}</span>
+        <Link to="/" className="hover:underline">Home</Link> / <Link to="/shop" className="hover:underline">Shop</Link> /{' '}
+        {section && <><Link to={`/?section=${section.slug}`} className="hover:underline">{section.name}</Link> / </>}
+        <span className="text-cocoa">{p.name}</span>
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
@@ -165,7 +172,7 @@ export default function ProductDetail() {
             <span className="text-3xl font-semibold">{inr(p.price)}</span>
             {off > 0 && <><span className="text-lg text-cocoa-soft line-through">{inr(p.compare_price)}</span><Badge>Save {off}%</Badge></>}
           </div>
-          <p className="mt-1 text-xs text-cocoa-soft">Inclusive of all taxes · {p.size}</p>
+          <p className="mt-1 text-xs text-cocoa-soft">Inclusive of all taxes{p.size ? ` · ${p.size}` : ''}</p>
 
           {/* Scent notes */}
           {(() => {
@@ -199,26 +206,38 @@ export default function ProductDetail() {
 
           <div className="mt-6"><PincodeCheck /></div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
-            {[
-              [ClockIcon, 'Burn time', `${p.burn_time_hours}+ hours`],
-              [LeafIcon, 'Wax', p.wax_type],
-              [FlameIcon, 'Wick', p.wick_type],
-              [LeafIcon, 'Fragrance load', p.fragrance_load],
-            ].map(([Icon, label, val]) => (
-              <div key={label} className="flex items-start gap-3">
-                <Icon className="mt-0.5 h-5 w-5 text-ember" />
-                <div><p className="text-cocoa-soft">{label}</p><p className="font-medium">{val}</p></div>
-              </div>
-            ))}
-          </div>
+          {isCandle ? (
+            <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
+              {[
+                [ClockIcon, 'Burn time', `${p.burn_time_hours}+ hours`],
+                [LeafIcon, 'Wax', p.wax_type],
+                [FlameIcon, 'Wick', p.wick_type],
+                [LeafIcon, 'Fragrance load', p.fragrance_load],
+              ].map(([Icon, label, val]) => (
+                <div key={label} className="flex items-start gap-3">
+                  <Icon className="mt-0.5 h-5 w-5 text-ember" />
+                  <div><p className="text-cocoa-soft">{label}</p><p className="font-medium">{val}</p></div>
+                </div>
+              ))}
+            </div>
+          ) : p.specs?.length > 0 && (
+            <div className="mt-8 rounded-2xl bg-wax p-5">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-cocoa-soft">Details</p>
+              {p.specs.map((x) => (
+                <div key={x.label} className="flex gap-4 border-b border-sand/70 py-2 text-sm last:border-0">
+                  <span className="w-28 shrink-0 text-cocoa-soft">{x.label}</span>
+                  <span className="font-medium">{x.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-8 space-y-2">
             <details open className="rounded-xl border border-sand p-4">
               <summary className="cursor-pointer font-medium">Description</summary>
               <p className="mt-3 text-sm leading-relaxed text-cocoa-soft">{p.description}</p>
             </details>
-            <details className="rounded-xl border border-sand p-4">
+            {isCandle && <details className="rounded-xl border border-sand p-4">
               <summary className="cursor-pointer font-medium">Candle care</summary>
               <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-cocoa-soft">
                 <li>First burn: let the top melt fully to the edges (2–3 hours) to avoid tunnelling.</li>
@@ -226,7 +245,7 @@ export default function ProductDetail() {
                 <li>Never burn for more than 4 hours at a time.</li>
               </ul>
               <Link to="/candle-care" className="mt-2 inline-block text-sm underline">Full care guide</Link>
-            </details>
+            </details>}
             <details className="rounded-xl border border-sand p-4">
               <summary className="cursor-pointer font-medium">Shipping & returns</summary>
               <p className="mt-3 text-sm text-cocoa-soft">Ships in 1–2 days. Free shipping above ₹999. Damaged in transit? Send us an unboxing video within 48 hours for a free replacement.</p>

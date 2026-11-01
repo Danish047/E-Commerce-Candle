@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { useApi } from '../utils/helpers'
@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard'
 import { ErrorBox, PageHeader, Spinner } from '../components/ui'
 import BannerSlider from '../components/BannerSlider'
 import { CloseIcon } from '../components/Icons'
+import { sectionBySlug, useStorefront } from '../store/storefront'
 
 const PRICE_RANGES = [
   { label: 'Under ₹700', min: '', max: 699 },
@@ -43,12 +44,19 @@ export default function Shop() {
   const get = (k) => params.get(k) || ''
   const page = Number(get('page')) || 1
 
-  const categories = useApi(() => api.catalog.categories(), [])
+  const { sections, load } = useStorefront()
+  useEffect(() => { load() }, [load])
+  const section = sectionBySlug(sections, get('section'))
+  const shopSections = sections.filter((x) => x.status === 'live')
+  // Mood / occasion filters only make sense for candles
+  const candleFilters = !section || section.product_type === 'candle'
+
+  const categories = useApi(() => api.catalog.categories(get('section') ? { section: get('section') } : {}), [get('section')])
   const moods = useApi(() => api.catalog.moods(), [])
   const occasions = useApi(() => api.catalog.occasions(), [])
 
   const query = {
-    category: get('category'), mood: get('mood'), occasion: get('occasion'), search: get('search'),
+    section: get('section'), category: get('category'), mood: get('mood'), occasion: get('occasion'), search: get('search'),
     min_price: get('min_price'), max_price: get('max_price'), ordering: get('ordering'), page, page_size: PAGE_SIZE,
   }
   const products = useApi(() => api.catalog.products(query), [params.toString()])
@@ -64,17 +72,24 @@ export default function Shop() {
   const activeCount = ['category', 'mood', 'occasion', 'search', 'min_price', 'max_price'].filter(get).length
   const catName = categories.data?.find((c) => c.slug === get('category'))?.name
   const occName = occasions.data?.find((o) => o.slug === get('occasion'))?.name
-  const title = get('search') ? `Results for "${get('search')}"` : catName || occName || 'All Candles'
+  const title = get('search') ? `Results for "${get('search')}"` : catName || occName || section?.name || 'All Products'
+  const noun = (n) => `${n} ${section?.product_type === 'candle' ? 'candle' : 'product'}${n === 1 ? '' : 's'}`
   const totalPages = products.data ? Math.ceil(products.data.count / PAGE_SIZE) : 1
 
   const filters = (
     <div className="space-y-7">
-      <FilterGroup title="Scent family" active={get('category')} onPick={(v) => update({ category: v })}
-        options={(categories.data || []).map((c) => ({ value: c.slug, label: c.name }))} />
-      <FilterGroup title="Mood" active={get('mood')} onPick={(v) => update({ mood: v })}
-        options={(moods.data || []).map((m) => ({ value: m.slug, label: m.name }))} />
-      <FilterGroup title="Occasion" active={get('occasion')} onPick={(v) => update({ occasion: v })}
-        options={(occasions.data || []).map((o) => ({ value: o.slug, label: o.name }))} />
+      {(categories.data || []).length > 1 && (
+        <FilterGroup title={section?.product_type === 'candle' ? 'Scent family' : 'Category'} active={get('category')} onPick={(v) => update({ category: v })}
+          options={(categories.data || []).map((c) => ({ value: c.slug, label: c.name }))} />
+      )}
+      {candleFilters && (
+        <>
+          <FilterGroup title="Mood" active={get('mood')} onPick={(v) => update({ mood: v })}
+            options={(moods.data || []).map((m) => ({ value: m.slug, label: m.name }))} />
+          <FilterGroup title="Occasion" active={get('occasion')} onPick={(v) => update({ occasion: v })}
+            options={(occasions.data || []).map((o) => ({ value: o.slug, label: o.name }))} />
+        </>
+      )}
       <FilterGroup title="Price" active={priceKey}
         onPick={(v) => {
           const r = PRICE_RANGES.find((p) => `${p.min}-${p.max}` === v)
@@ -82,7 +97,7 @@ export default function Shop() {
         }}
         options={PRICE_RANGES.map((p) => ({ value: `${p.min}-${p.max}`, label: p.label }))} />
       {activeCount > 0 && (
-        <button onClick={() => setParams(get('ordering') ? { ordering: get('ordering') } : {})} className="text-sm underline">
+        <button onClick={() => setParams({ ...(get('section') && { section: get('section') }), ...(get('ordering') && { ordering: get('ordering') }) })} className="text-sm underline">
           Clear all filters
         </button>
       )}
@@ -92,7 +107,19 @@ export default function Shop() {
   return (
     <>
       <BannerSlider placement="shop_top" tall={false} className="mt-6" />
-      <PageHeader eyebrow="Shop" title={title} subtitle="Hand-poured soy candles in scents inspired by Indian memories and moods." />
+      <PageHeader eyebrow="Shop" title={title}
+        subtitle={section?.tagline || 'Handmade by GenzinIT: soy candles, 3D printed pieces and more.'} />
+      {shopSections.length > 1 && (
+        <div className="container-x mt-6 flex gap-2 overflow-x-auto pb-1">
+          {[{ slug: '', name: 'All', icon: '✨' }, ...shopSections].map((x) => (
+            <button key={x.slug || 'all'}
+              onClick={() => update({ section: x.slug, category: '', mood: x.slug && x.product_type !== 'candle' ? '' : get('mood'), occasion: x.slug && x.product_type !== 'candle' ? '' : get('occasion') })}
+              className={`chip shrink-0 ${get('section') === x.slug ? 'chip-active' : ''}`}>
+              <span aria-hidden>{x.icon}</span> {x.name}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="container-x mt-10 grid gap-10 lg:grid-cols-[260px_1fr]">
         <aside className="hidden lg:block">{filters}</aside>
 
@@ -102,7 +129,7 @@ export default function Shop() {
               Filters {activeCount > 0 && `(${activeCount})`}
             </button>
             <p className="hidden text-sm text-cocoa-soft lg:block">
-              {products.data ? `${products.data.count} candle${products.data.count === 1 ? '' : 's'}` : ''}
+              {products.data ? noun(products.data.count) : ''}
             </p>
             <select value={get('ordering')} onChange={(e) => update({ ordering: e.target.value })}
               className="rounded-full border border-sand bg-white px-4 py-2 text-sm outline-none">
@@ -113,8 +140,8 @@ export default function Shop() {
           {products.loading ? <Spinner /> : products.error ? <ErrorBox error={products.error} onRetry={products.reload} /> :
             products.data.results.length === 0 ? (
               <div className="rounded-2xl bg-wax p-12 text-center">
-                <p className="font-serif text-2xl">No candles match these filters</p>
-                <button onClick={() => setParams({})} className="btn-outline mt-5">Clear filters</button>
+                <p className="font-serif text-2xl">No products match these filters</p>
+                <button onClick={() => setParams(get('section') ? { section: get('section') } : {})} className="btn-outline mt-5">Clear filters</button>
               </div>
             ) : (
               <>
@@ -146,7 +173,7 @@ export default function Shop() {
             </div>
             {filters}
             <button onClick={() => setShowFilters(false)} className="btn-primary mt-8 w-full">
-              Show {products.data?.count ?? ''} candles
+              Show {products.data ? noun(products.data.count) : 'products'}
             </button>
           </div>
         </div>

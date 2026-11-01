@@ -5,6 +5,18 @@ export default function CandleImage({ product, className = '', flame = false }) 
   if (img) return <img src={img} alt={product.name} loading="lazy" className={`h-full w-full object-cover ${className}`} />
 
   const color = product?.color || '#E6D5C0'
+  if (product?.section_type && product.section_type !== 'candle') {
+    // Non-candle product without a photo: a simple 3D cube in the product's colour.
+    return (
+      <div className={`flex h-full w-full items-center justify-center bg-gradient-to-b from-wax to-sand/70 ${className}`}>
+        <svg viewBox="0 0 120 120" className="h-1/2 w-1/2 drop-shadow-md" aria-label={product?.name}>
+          <path d="M60 12 104 36 60 60 16 36z" fill="#fff" opacity=".6" />
+          <path d="M16 36 60 60v48L16 84z" fill={color} />
+          <path d="M104 36 60 60v48l44-24z" fill={color} opacity=".7" />
+        </svg>
+      </div>
+    )
+  }
   return (
     <div className={`flex h-full w-full items-center justify-center bg-gradient-to-b from-wax to-sand/70 ${className}`}>
       <svg viewBox="0 0 120 150" className="h-3/4 w-3/4 drop-shadow-md" aria-label={product?.name}>

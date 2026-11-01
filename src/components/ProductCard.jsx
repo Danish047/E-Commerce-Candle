@@ -4,6 +4,15 @@ import { Badge, Stars } from './ui'
 import { useCart } from '../store/cart'
 import { discountPct, inr } from '../utils/helpers'
 
+// Candles show their scent notes; other sections (3D printing, ...) show their first details or the tagline.
+const subtitle = (p) => {
+  if (p.section_type && p.section_type !== 'candle') {
+    return p.specs?.length ? p.specs.slice(0, 2).map((x) => x.value).join(' · ') : p.tagline
+  }
+  const notes = p.notes || {}
+  return (notes.top || []).concat(notes.middle || []).slice(0, 3).join(' · ') || p.tagline
+}
+
 export default function ProductCard({ product }) {
   const add = useCart((s) => s.add)
   const off = discountPct(product.price, product.compare_price)
@@ -34,7 +43,7 @@ export default function ProductCard({ product }) {
         <Link to={`/product/${product.slug}`} className="mt-1 font-serif text-xl font-semibold leading-tight text-cocoa hover:text-ember">
           {product.name}
         </Link>
-        <p className="mt-0.5 line-clamp-1 text-sm text-cocoa-soft">{product.notes.top.concat(product.notes.middle).slice(0, 3).join(' · ')}</p>
+        <p className="mt-0.5 line-clamp-1 text-sm text-cocoa-soft">{subtitle(product)}</p>
         <div className="mt-2 flex items-baseline gap-2">
           <span className="font-semibold text-cocoa">{inr(product.price)}</span>
           {off > 0 && <span className="text-sm text-cocoa-soft line-through">{inr(product.compare_price)}</span>}

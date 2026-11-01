@@ -16,6 +16,7 @@ import Reviews from './pages/Reviews'
 import Messages from './pages/Messages'
 import Subscribers from './pages/Subscribers'
 import Collections from './pages/Collections'
+import Sections from './pages/Sections'
 import Quiz from './pages/Quiz'
 import Banners from './pages/Banners'
 import Settings from './pages/Settings'
@@ -57,6 +58,7 @@ export default function AdminApp() {
         <Route path="reviews" element={<Reviews />} />
         <Route path="messages" element={<Messages />} />
         <Route path="subscribers" element={<Subscribers />} />
+        <Route path="sections" element={<Sections />} />
         <Route path="collections" element={<Collections />} />
         <Route path="quiz" element={<Quiz />} />
         <Route path="banners" element={<Banners />} />
