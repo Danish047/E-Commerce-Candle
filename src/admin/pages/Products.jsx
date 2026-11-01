@@ -142,7 +142,7 @@ export default function Products() {
                       {p.section_name && <span className="block text-xs text-adm-muted">{p.section_name}</span>}
                     </td>
                     <td className="a-td tabular text-right">
-                      <span className="font-medium text-adm-ink">{inr(p.price)}</span>
+                      <span className="font-medium text-adm-ink">{p.quote_only ? 'On request' : inr(p.price)}</span>
                       {p.compare_price && <span className="block text-xs text-adm-muted line-through">{inr(p.compare_price)}</span>}
                     </td>
                     <td className="a-td text-right"><StockCell n={p.stock} /></td>

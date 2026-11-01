@@ -11,7 +11,7 @@ import { toast } from '../store'
 import { DotsIcon } from '../components/Icons'
 
 const BLANK = {
-  name: '', tagline: '', description: '', price: '', compare_price: '', size: '200g', sku: '', section: '', specs: [], category: '',
+  name: '', tagline: '', description: '', price: '', compare_price: '', size: '200g', sku: '', section: '', specs: [], quote_only: false, category: '',
   moods: [], occasions: [], notes: { top: [], middle: [], base: [] }, burn_time_hours: 45, wax_type: '100% Soy',
   wick_type: 'Cotton', fragrance_load: '10%', stock: 0, color: '#C99A6B', is_active: true, is_bestseller: false, is_new: true, slug: '',
 }
@@ -177,7 +177,8 @@ export default function ProductEditor() {
     if (!isNew || !cats?.length || form.category) return
     const sec = sections.find((x) => String(x.id) === sp.get('section')) || sections[0]
     const cat = cats.find((c) => sec && c.section === sec.id) || cats[0]
-    setForm((f) => ({ ...f, section: sec?.id ?? '', category: cat.id, size: sec && sec.product_type !== 'candle' ? '' : f.size }))
+    setForm((f) => ({ ...f, section: sec?.id ?? '', category: cat.id, size: sec && sec.product_type !== 'candle' ? '' : f.size,
+      quote_only: !!sec?.allow_custom_orders }))
   }, [cats, isNew]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const section = sections.find((x) => x.id === Number(form.section))
@@ -333,7 +334,7 @@ export default function ProductEditor() {
               <p className="font-serif text-xl font-semibold leading-tight">{form.name || 'Product name'}</p>
               <p className="mt-0.5 line-clamp-1 text-xs text-adm-muted">{form.tagline || 'One-line story'}</p>
               <p className="mt-2 flex items-baseline gap-2">
-                <span className="tabular font-semibold">{inr(form.price)}</span>
+                <span className="tabular font-semibold">{form.quote_only ? 'Price on request' : inr(form.price)}</span>
                 {off > 0 && <><span className="tabular text-xs text-adm-muted line-through">{inr(form.compare_price)}</span><span className="text-xs font-semibold text-ok">{off}% off</span></>}
               </p>
             </div>
@@ -348,9 +349,15 @@ export default function ProductEditor() {
           </Panel>
 
           <Panel title="Price & stock">
+            <div className="mb-4">
+              <Toggle label="Price on request" checked={form.quote_only} onChange={set('quote_only')}
+                description="For custom work. No Add to cart; customers get a quote on WhatsApp or by form." />
+            </div>
             <div className="grid grid-cols-2 gap-3">
+              {!form.quote_only && <>
               <Field label="Price" required error={errors.price}><Input prefix="₹" type="number" min="0" value={form.price} onChange={set('price')} error={errors.price} /></Field>
               <Field label="MRP" error={errors.compare_price}><Input prefix="₹" type="number" min="0" value={form.compare_price} onChange={set('compare_price')} placeholder="Optional" error={errors.compare_price} /></Field>
+              </>}
               <Field label="In stock" error={errors.stock}><Input type="number" min="0" value={form.stock} onChange={set('stock')} className="tabular" /></Field>
               <Field label="SKU"><Input value={form.sku} onChange={set('sku')} placeholder="LUM-013" /></Field>
             </div>
